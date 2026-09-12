@@ -10,6 +10,8 @@ patterns, lineages, creator-profile claims, and agent-ready execution prompts.
 - Prompt Library and Prompt DNA views.
 - Principle, pattern, Failure Lab, project, methodology, review, and creator-profile surfaces.
 - React Flow lineage visualization.
+- Deterministic Decision Studio for mapping change consequences, retrieving prior evidence,
+  comparing architecture postures, and drafting a human-authorized decision contract.
 - Working Architecting Compiler with module-level provenance.
 - Fixture-mode hybrid search and 20-prompt walking-skeleton dataset.
 - OpenAI Responses API and Anthropic Messages API adapters behind one governed interface.
@@ -26,7 +28,8 @@ patterns, lineages, creator-profile claims, and agent-ready execution prompts.
 This is a runnable **walking skeleton**, not a claim that the complete 7,000+ prompt corpus,
 production authentication, hosted storage, or every canonical promotion workflow is finished.
 Fixture mode demonstrates the product and preserves the authority model. Prisma mode supplies
-its durable backend foundation.
+its durable backend foundation. Decision Studio output is an investigation projection: it does
+not inspect a repository, prove an impact, authorize implementation, or promote canonical knowledge.
 
 ## Fastest start — complete Docker stack
 

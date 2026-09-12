@@ -5,6 +5,7 @@ import {
   BrainCircuit,
   GitBranch,
   Library,
+  Scale,
   Search,
   ShieldCheck,
   Sparkles,
@@ -15,6 +16,7 @@ import {
 
 export const primaryNavigation = [
   { href: '/', label: 'Now', icon: Activity },
+  { href: '/decisions', label: 'Decision Studio', icon: Scale },
   { href: '/search', label: 'Search', icon: Search },
   { href: '/library', label: 'Library', icon: Library },
   { href: '/lineages', label: 'Lineages', icon: GitBranch },

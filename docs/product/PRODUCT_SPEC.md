@@ -2,9 +2,10 @@
 
 ## Product promise
 
-Describe a consequential software problem, retrieve the architectural lessons already earned in
-prior projects, compile a bounded agent work packet, verify the implementation, and convert any
-new failure into a reusable control.
+Describe a consequential software change, map what it may disturb, retrieve the architectural
+lessons already earned in prior projects, compare bounded architecture postures, compile a draft
+decision contract and agent work packet, verify the implementation, and convert any new failure
+into a reusable control.
 
 ## Primary actors
 
@@ -35,8 +36,11 @@ new failure into a reusable control.
 
 ```text
 New problem
+  → map likely impact across authority, data, workflow, interfaces, security, operations, commercial truth, and evidence
   → search prior evidence
   → inspect Prompt DNA and lineages
+  → compare architecture postures
+  → draft a human-authorized decision contract
   → select principles and patterns
   → compile agent work packet
   → execute externally
@@ -49,6 +53,7 @@ New problem
 ## Product surfaces
 
 - Now
+- Decision Studio
 - Universal Search
 - Library
 - Prompt DNA
@@ -68,3 +73,12 @@ New problem
 The starter provides a complete navigable product experience using fixture data plus durable
 backend schemas and provider adapters. Full corpus ingestion, hosted identity, production object
 storage, and automatic GitHub evidence correlation are later bounded slices.
+
+## Decision intelligence boundary
+
+The walking-skeleton Decision Studio is deterministic and fixture-backed. It prioritizes domains
+to investigate, retrieves potentially relevant precedent without changing source grades, compares
+three architecture postures, and generates a draft contract. Its scores are not probabilities, its
+retrieval is not proof of relevance, and its output cannot authorize execution or establish
+canonical truth. Repository inspection, runtime evidence, provider acceptance, human approval, and
+outcome evidence must be gathered and recorded as distinct claims.

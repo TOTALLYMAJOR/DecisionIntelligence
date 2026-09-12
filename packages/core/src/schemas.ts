@@ -20,4 +20,11 @@ export const compilerRequestSchema = z.object({
   moduleIds: z.array(z.string()).min(1).max(24),
 });
 
+export const decisionAnalysisRequestSchema = z.object({
+  change: z.string().trim().min(20).max(3_000),
+  desiredOutcome: z.string().trim().min(10).max(2_000),
+  constraints: z.string().trim().max(2_000).default(''),
+});
+
 export type AnalysisCandidate = z.infer<typeof analysisCandidateSchema>;
+export type DecisionAnalysisRequest = z.infer<typeof decisionAnalysisRequestSchema>;

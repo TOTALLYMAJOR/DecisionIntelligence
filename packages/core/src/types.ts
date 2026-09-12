@@ -147,3 +147,84 @@ export interface SearchResult {
   evidenceGrade: EvidenceGrade;
   tags: string[];
 }
+
+export const decisionImpactDomains = [
+  'authority',
+  'data',
+  'workflow',
+  'interfaces',
+  'security',
+  'operations',
+  'commercial',
+  'evidence',
+] as const;
+
+export type DecisionImpactDomain = (typeof decisionImpactDomains)[number];
+export type DecisionImpactLevel = 'contained' | 'watch' | 'material' | 'critical';
+
+export interface DecisionBrief {
+  change: string;
+  desiredOutcome: string;
+  constraints: string;
+}
+
+export interface DecisionImpact {
+  domain: DecisionImpactDomain;
+  title: string;
+  score: number;
+  level: DecisionImpactLevel;
+  rationale: string;
+  question: string;
+  matchedTerms: string[];
+  evidenceGrade: 'INFERRED' | 'TENTATIVE';
+}
+
+export interface DecisionEvidence {
+  id: string;
+  kind: SearchResult['kind'];
+  title: string;
+  summary: string;
+  href: string;
+  sourceGrade: EvidenceGrade;
+  relevanceGrade: 'INFERRED';
+  matchedOn: string;
+}
+
+export interface DecisionOption {
+  optionId: 'extend-authority' | 'bounded-orchestration' | 'new-bounded-context';
+  title: string;
+  posture: string;
+  summary: string;
+  whenItFits: string;
+  tradeoffs: string[];
+  risks: string[];
+  requiredEvidence: string[];
+  complexity: 'lower' | 'medium' | 'higher';
+  reversibility: 'higher' | 'medium' | 'lower';
+  recommended: boolean;
+}
+
+export interface DecisionAnalysis {
+  analysisId: string;
+  brief: DecisionBrief;
+  authorityBoundary: string;
+  generatedBy: 'deterministic-fixture-analysis';
+  strongestImpact: DecisionImpactDomain;
+  impacts: DecisionImpact[];
+  evidence: DecisionEvidence[];
+  assumptions: string[];
+  openQuestions: string[];
+  options: DecisionOption[];
+  recommendedOptionId: DecisionOption['optionId'];
+}
+
+export interface DecisionContract {
+  status: 'draft';
+  optionId: DecisionOption['optionId'];
+  markdown: string;
+  provenance: {
+    analysisId: string;
+    evidenceIds: string[];
+    impactDomains: DecisionImpactDomain[];
+  };
+}

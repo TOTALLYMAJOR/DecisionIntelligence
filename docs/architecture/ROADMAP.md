@@ -4,6 +4,7 @@
 
 - Fixture-mode product experience
 - Search
+- Deterministic Decision Studio with impact map, precedent retrieval, architecture postures, and draft contract
 - Prompt DNA
 - Lineage visualization
 - Compiler
@@ -37,6 +38,7 @@
 
 ## Phase 4 — Compiler intelligence
 
+- decision-contract to work-packet handoff
 - module compatibility rules
 - authority-collision detection
 - compiler evaluation suite
