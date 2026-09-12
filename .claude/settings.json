@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Bash(pwd)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git rev-parse *)",
+      "Bash(rg *)",
+      "Bash(npm run *)",
+      "Bash(npm test *)",
+      "Bash(docker compose ps *)"
+    ],
+    "deny": [
+      "Bash(git push *)",
+      "Bash(git merge *)",
+      "Bash(npm publish *)",
+      "Bash(rm -rf *)",
+      "Bash(docker compose down -v *)",
+      "Bash(cat .env*)",
+      "Bash(printenv *)"
+    ]
+  }
+}

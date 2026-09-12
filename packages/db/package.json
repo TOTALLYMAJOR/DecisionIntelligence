@@ -1,0 +1,32 @@
+{
+  "name": "@limitless/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src prisma.config.ts",
+    "prisma:generate": "prisma generate --config prisma.config.ts",
+    "prisma:migrate": "prisma migrate dev --name limitless_baseline --config prisma.config.ts",
+    "prisma:migrate:deploy": "prisma migrate deploy --config prisma.config.ts",
+    "prisma:studio": "prisma studio --config prisma.config.ts",
+    "seed": "tsx src/seed.ts",
+    "prisma:push": "prisma db push --config prisma.config.ts"
+  },
+  "dependencies": {
+    "@limitless/core": "*",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.5",
+    "dotenv": "^17.2.1",
+    "prisma": "^7.8.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.2"
+  }
+}

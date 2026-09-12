@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: limitless
+          POSTGRES_PASSWORD: limitless
+          POSTGRES_DB: limitless
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U limitless -d limitless"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql://limitless:limitless@localhost:5432/limitless?schema=public
+      DIRECT_URL: postgresql://limitless:limitless@localhost:5432/limitless?schema=public
+      DATA_MODE: fixture
+      NEXT_PUBLIC_DATA_MODE: fixture
+      AI_PROVIDER_MODE: mock
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run db:generate
+      - run: npm run verify:structure
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run lint
+      - run: npm run build

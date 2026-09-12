@@ -1,0 +1,9 @@
+import Link from 'next/link';
+import { promptRecords } from '@limitless/core';
+import { EvidenceBadge } from '../../components/EvidenceBadge';
+import { PageHeader } from '../../components/PageHeader';
+import { formatScore, titleCase } from '../../lib/format';
+
+export default function LibraryPage() {
+  return <><PageHeader eyebrow="Historical + canonical" title="Prompt Library" description="Original prompts remain immutable evidence. Canonical versions, principles, and patterns evolve separately through reviewed versions." /><section className="panel"><div className="panelHeader"><div><h2>Representative corpus</h2><p>20 prompts prove the data model before full-archive ingestion.</p></div></div><div className="tableWrap"><table className="dataTable"><thead><tr><th>Prompt DNA</th><th>Family</th><th>Evidence</th><th>Impact</th><th>Reuse</th></tr></thead><tbody>{promptRecords.toSorted((a,b)=>b.impactScore-a.impactScore).map((prompt)=><tr key={prompt.libraryId}><td><Link href={`/library/${prompt.libraryId}`} className="tableTitle">{prompt.title}</Link><span className="tableSub mono">{prompt.libraryId} · {prompt.originalPromptId}</span><span className="tableSub">{prompt.normalizedIntent}</span></td><td>{titleCase(prompt.family)}<div className="tagRow" style={{marginTop:7}}>{prompt.tags.slice(0,2).map(tag=><span className="tag" key={tag}>{tag}</span>)}</div></td><td><EvidenceBadge grade={prompt.evidenceGrade}/></td><td><span className="mono">{formatScore(prompt.impactScore)}</span><div className="scoreBar" style={{marginTop:7}}><span style={{width:`${prompt.impactScore}%`}}/></div></td><td><span className="mono">{formatScore(prompt.reusabilityScore)}</span><div className="scoreBar" style={{marginTop:7}}><span style={{width:`${prompt.reusabilityScore}%`}}/></div></td></tr>)}</tbody></table></div></section></>;
+}

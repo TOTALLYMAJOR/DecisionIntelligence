@@ -1,0 +1,6 @@
+node_modules
+.next
+coverage
+packages/db/src/generated
+var
+package-lock.json

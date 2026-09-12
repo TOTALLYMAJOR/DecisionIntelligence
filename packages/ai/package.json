@@ -1,0 +1,19 @@
+{
+  "name": "@limitless/ai",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run src",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0",
+    "@limitless/core": "*",
+    "openai": "^6.39.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": { "typescript": "^5.9.2", "vitest": "^4.1.7" }
+}

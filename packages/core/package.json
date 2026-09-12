@@ -1,0 +1,14 @@
+{
+  "name": "@limitless/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run src",
+    "lint": "eslint src"
+  },
+  "dependencies": { "zod": "^4.4.3" },
+  "devDependencies": { "typescript": "^5.9.2", "vitest": "^4.1.7" }
+}

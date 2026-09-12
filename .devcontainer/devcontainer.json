@@ -1,0 +1,23 @@
+{
+  "name": "Limitless Architecting OS",
+  "dockerComposeFile": "../docker-compose.devcontainer.yml",
+  "service": "workspace",
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "stopCompose",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "prisma.prisma",
+        "ms-azuretools.vscode-docker",
+        "eamodio.gitlens",
+        "usernamehw.errorlens",
+        "github.copilot",
+        "github.copilot-chat"
+      ]
+    }
+  },
+  "postCreateCommand": "npm install && cp -n .env.example .env.local || true",
+  "remoteUser": "node"
+}

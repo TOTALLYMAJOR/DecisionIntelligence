@@ -1,0 +1,204 @@
+name: ${COMPOSE_PROJECT_NAME:-limitless-architecting-os}
+
+x-app-environment: &app-environment
+  DATA_MODE: ${DATA_MODE:-fixture}
+  NEXT_PUBLIC_DATA_MODE: ${NEXT_PUBLIC_DATA_MODE:-fixture}
+  APP_URL: http://localhost:${WEB_PORT:-3000}
+  DATABASE_URL: postgresql://${POSTGRES_USER:-limitless}:${POSTGRES_PASSWORD:-limitless}@postgres:5432/${POSTGRES_DB:-limitless}?schema=public
+  DIRECT_URL: postgresql://${POSTGRES_USER:-limitless}:${POSTGRES_PASSWORD:-limitless}@postgres:5432/${POSTGRES_DB:-limitless}?schema=public
+  REDIS_URL: redis://redis:6379
+  OBJECT_STORAGE_ENDPOINT: http://minio:9000
+  OBJECT_STORAGE_REGION: us-east-1
+  OBJECT_STORAGE_BUCKET: ${OBJECT_STORAGE_BUCKET:-limitless-evidence}
+  OBJECT_STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:-limitless}
+  OBJECT_STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-limitless-dev-secret}
+  OBJECT_STORAGE_FORCE_PATH_STYLE: "true"
+  AI_PROVIDER_MODE: ${AI_PROVIDER_MODE:-mock}
+  AI_WRITEBACK_ENABLED: ${AI_WRITEBACK_ENABLED:-false}
+  AI_MAX_OUTPUT_TOKENS: ${AI_MAX_OUTPUT_TOKENS:-1800}
+  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+  OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5}
+  OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
+  OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-4-6}
+  ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-}
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-limitless}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-limitless}
+      POSTGRES_DB: ${POSTGRES_DB:-limitless}
+    ports:
+      - "${POSTGRES_BIND_ADDRESS:-127.0.0.1}:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - limitless_postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-limitless} -d ${POSTGRES_DB:-limitless}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [backend]
+
+  postgres-init:
+    image: pgvector/pgvector:pg17
+    restart: "no"
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:-limitless}
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        psql -h postgres -U ${POSTGRES_USER:-limitless} -d ${POSTGRES_DB:-limitless} \
+          -v ON_ERROR_STOP=1 \
+          -c 'CREATE EXTENSION IF NOT EXISTS vector;' \
+          -c 'CREATE EXTENSION IF NOT EXISTS pg_trgm;'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [backend]
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_BIND_ADDRESS:-127.0.0.1}:${REDIS_PORT:-6379}:6379"
+    volumes:
+      - limitless_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [backend]
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ':9001'
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-limitless}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-limitless-dev-secret}
+    ports:
+      - "${MINIO_BIND_ADDRESS:-127.0.0.1}:${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_BIND_ADDRESS:-127.0.0.1}:${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - limitless_minio_data:/data
+    networks: [backend]
+
+  minio-init:
+    image: minio/mc:latest
+    restart: "no"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-limitless}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-limitless-dev-secret}
+      OBJECT_STORAGE_BUCKET: ${OBJECT_STORAGE_BUCKET:-limitless-evidence}
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        until mc alias set local http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}"; do
+          echo '[minio-init] waiting for MinIO';
+          sleep 2;
+        done
+        mc mb --ignore-existing "local/$${OBJECT_STORAGE_BUCKET}"
+        mc anonymous set none "local/$${OBJECT_STORAGE_BUCKET}"
+        echo "[minio-init] private bucket ready: $${OBJECT_STORAGE_BUCKET}"
+    depends_on:
+      minio:
+        condition: service_started
+    networks: [backend]
+
+  db-init:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: tools
+    restart: "no"
+    environment:
+      <<: *app-environment
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        npm run db:push
+        npm run db:seed
+        echo '[db-init] schema and fixture seed ready'
+    depends_on:
+      postgres-init:
+        condition: service_completed_successfully
+    networks: [backend]
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web
+    restart: unless-stopped
+    init: true
+    environment:
+      <<: *app-environment
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+    ports:
+      - "${WEB_BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-3000}:3000"
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 20s
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    networks: [edge, backend]
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: worker
+    restart: unless-stopped
+    init: true
+    environment:
+      <<: *app-environment
+      WORKER_MODE: ${WORKER_MODE:-redis}
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('node:fs').accessSync('/tmp/limitless-worker-ready')"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 15s
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    networks: [edge, backend]
+
+volumes:
+  limitless_postgres_data:
+  limitless_redis_data:
+  limitless_minio_data:
+
+networks:
+  edge:
+  backend:
+    internal: true

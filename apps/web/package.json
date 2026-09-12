@@ -1,0 +1,29 @@
+{
+  "name": "@limitless/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint app components lib next.config.ts"
+  },
+  "dependencies": {
+    "@limitless/ai": "*",
+    "@limitless/core": "*",
+    "@limitless/ingestion": "*",
+    "@xyflow/react": "^12.9.3",
+    "lucide-react": "^0.468.0",
+    "next": "^16.2.11",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "typescript": "^5.9.2"
+  }
+}

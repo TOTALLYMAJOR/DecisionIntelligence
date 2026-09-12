@@ -1,0 +1,1 @@
+Read `AGENTS.md` and `docs/prompts/OPENAI_CODEX_CONTINUATION.md`. Inspect the current repository state, select the next eligible bounded slice from `docs/architecture/ROADMAP.md`, and execute only that slice with exact validation evidence.

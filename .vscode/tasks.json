@@ -1,0 +1,85 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Bootstrap repository",
+      "type": "shell",
+      "command": "bash scripts/bootstrap.sh",
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "Start web",
+      "type": "shell",
+      "command": "npm run dev:web",
+      "isBackground": true,
+      "problemMatcher": "$tsc-watch",
+      "group": "build"
+    },
+    {
+      "label": "Start infrastructure",
+      "type": "shell",
+      "command": "npm run infra:up",
+      "problemMatcher": []
+    },
+    {
+      "label": "Generate Prisma client",
+      "type": "shell",
+      "command": "npm run db:generate",
+      "problemMatcher": []
+    },
+    {
+      "label": "Migrate and seed database",
+      "type": "shell",
+      "command": "npm run db:migrate && npm run db:seed",
+      "problemMatcher": []
+    },
+    {
+      "label": "Start worker",
+      "type": "shell",
+      "command": "npm run dev:worker",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Verify repository",
+      "type": "shell",
+      "command": "npm run verify",
+      "problemMatcher": [],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Docker: Start complete stack",
+      "type": "shell",
+      "command": "docker compose up --build -d",
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "Docker: Verify complete stack",
+      "type": "shell",
+      "command": "npm run docker:verify",
+      "problemMatcher": [],
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "Docker: Follow logs",
+      "type": "shell",
+      "command": "npm run docker:logs",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Stop (preserve data)",
+      "type": "shell",
+      "command": "npm run docker:down",
+      "problemMatcher": []
+    }
+  ]
+}

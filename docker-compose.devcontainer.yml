@@ -1,0 +1,43 @@
+services:
+  workspace:
+    image: mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm
+    volumes:
+      - .:/workspace:cached
+    command: sleep infinity
+    environment:
+      DATABASE_URL: postgresql://limitless:limitless@postgres:5432/limitless?schema=public
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: limitless
+      POSTGRES_PASSWORD: limitless
+      POSTGRES_DB: limitless
+    volumes:
+      - limitless_devcontainer_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U limitless -d limitless']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7.4-alpine
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - limitless_devcontainer_redis:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  limitless_devcontainer_postgres:
+  limitless_devcontainer_redis:

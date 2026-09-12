@@ -1,0 +1,5 @@
+import { principles } from '@limitless/core';
+import { EvidenceBadge } from '../../components/EvidenceBadge';
+import { PageHeader } from '../../components/PageHeader';
+
+export default function PrinciplesPage(){return <><PageHeader eyebrow="Decision constitution" title="Principles" description="Durable rules promoted only after repeated evidence. Each rule shows its confidence, projects, and historical prompt basis."/><div className="entityGrid">{principles.map((item,index)=><article className="panel prosePanel" key={item.id}><div className="entityCardTop"><span className="entityMeta">P-{String(index+1).padStart(3,'0')} · {item.status}</span><EvidenceBadge grade={item.evidenceGrade}/></div><h2 style={{marginTop:22}}>{item.title}</h2><p style={{fontSize:16,color:'var(--text)'}}>{item.statement}</p><p>{item.description}</p><div className="tagRow">{item.projectIds.map(project=><span className="tag" key={project}>{project}</span>)}<span className="tag">{item.promptIds.length} prompts</span></div></article>)}</div></>}

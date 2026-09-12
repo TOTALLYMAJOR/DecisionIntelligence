@@ -1,0 +1,352 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Workspace {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("workspaces")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  workspaceId String
+  slug        String
+  name        String
+  description String?  @db.Text
+  status      String   @default("active")
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([workspaceId, slug])
+  @@index([workspaceId, status])
+  @@map("projects")
+}
+
+model IngestionRun {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  projectId    String?
+  sourceKind   String
+  status       String   @default("pending")
+  startedAt    DateTime @default(now())
+  completedAt  DateTime?
+  recordCount  Int      @default(0)
+  warningCount Int      @default(0)
+  errorSummary String?  @db.Text
+  metadata     Json?
+
+  @@index([workspaceId, status, startedAt])
+  @@map("ingestion_runs")
+}
+
+model SourceArtifact {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  projectId      String?
+  ingestionRunId String?
+  sourceKind     String
+  sourceIdentity String
+  displayName    String
+  contentHash    String
+  objectKey      String?
+  mimeType       String?
+  byteSize       Int?
+  immutable      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  metadata       Json?
+
+  @@unique([workspaceId, sourceKind, sourceIdentity, contentHash])
+  @@index([workspaceId, projectId, sourceKind])
+  @@map("source_artifacts")
+}
+
+model SourceSpan {
+  id               String   @id @default(cuid())
+  workspaceId      String
+  sourceArtifactId String
+  startLine        Int?
+  endLine          Int?
+  startOffset      Int?
+  endOffset        Int?
+  excerpt          String   @db.Text
+  excerptHash      String
+  createdAt        DateTime @default(now())
+
+  @@index([workspaceId, sourceArtifactId])
+  @@map("source_spans")
+}
+
+model Prompt {
+  id                 String   @id @default(cuid())
+  workspaceId        String
+  projectId          String?
+  libraryId          String
+  originalPromptId   String
+  sourceArtifactId   String?
+  sourceSpanId       String?
+  title              String
+  family             String
+  form               String
+  originalText       String   @db.Text
+  redactedText       String   @db.Text
+  contentHash        String
+  originalTimestamp  DateTime?
+  sessionId          String?
+  impactScore        Int      @default(0)
+  reusabilityScore   Int      @default(0)
+  evidenceGrade      String   @default("UNPROVEN")
+  metadata           Json?
+  createdAt          DateTime @default(now())
+
+  @@unique([workspaceId, libraryId])
+  @@unique([workspaceId, contentHash, originalPromptId])
+  @@index([workspaceId, family, evidenceGrade])
+  @@map("prompts")
+}
+
+model PromptOccurrence {
+  id          String   @id @default(cuid())
+  workspaceId String
+  promptId    String
+  sessionId   String?
+  source      String?
+  occurredAt  DateTime?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([workspaceId, promptId])
+  @@map("prompt_occurrences")
+}
+
+model RedactionRecord {
+  id               String   @id @default(cuid())
+  workspaceId      String
+  sourceArtifactId String
+  category         String
+  count            Int      @default(1)
+  projectionHash   String
+  createdAt        DateTime @default(now())
+
+  @@index([workspaceId, sourceArtifactId])
+  @@map("redaction_records")
+}
+
+model KnowledgeEntity {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  projectId      String?
+  entityKey      String
+  kind           String
+  status         String   @default("candidate")
+  currentVersion Int      @default(1)
+  evidenceGrade  String   @default("UNPROVEN")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([workspaceId, entityKey])
+  @@index([workspaceId, kind, status])
+  @@map("knowledge_entities")
+}
+
+model KnowledgeEntityVersion {
+  id                String   @id @default(cuid())
+  workspaceId       String
+  knowledgeEntityId String
+  version           Int
+  title             String
+  statement         String   @db.Text
+  description       String?  @db.Text
+  payload            Json
+  evidenceGrade     String
+  reviewStatus      String   @default("candidate")
+  provider          String?
+  model             String?
+  createdBy         String
+  createdAt         DateTime @default(now())
+
+  @@unique([knowledgeEntityId, version])
+  @@index([workspaceId, reviewStatus, createdAt])
+  @@map("knowledge_entity_versions")
+}
+
+model KnowledgeEdge {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  fromEntityId   String
+  toEntityId     String
+  relation       String
+  evidenceGrade  String
+  reviewStatus   String   @default("candidate")
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  @@unique([workspaceId, fromEntityId, toEntityId, relation])
+  @@index([workspaceId, fromEntityId])
+  @@index([workspaceId, toEntityId])
+  @@map("knowledge_edges")
+}
+
+model EvidenceLink {
+  id               String   @id @default(cuid())
+  workspaceId      String
+  targetType       String
+  targetId         String
+  sourceArtifactId String?
+  sourceSpanId     String?
+  label            String
+  evidenceType     String
+  evidenceGrade    String
+  createdAt        DateTime @default(now())
+
+  @@index([workspaceId, targetType, targetId])
+  @@map("evidence_links")
+}
+
+model Lineage {
+  id            String   @id @default(cuid())
+  workspaceId   String
+  projectId     String?
+  lineageKey    String
+  title         String
+  summary       String   @db.Text
+  status        String   @default("candidate")
+  currentVersion Int     @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([workspaceId, lineageKey])
+  @@index([workspaceId, status])
+  @@map("lineages")
+}
+
+model LineageStep {
+  id            String   @id @default(cuid())
+  workspaceId   String
+  lineageId     String
+  stepKey       String
+  stepType      String
+  title         String
+  detail        String   @db.Text
+  ordinal       Int
+  evidenceGrade String
+  metadata      Json?
+
+  @@unique([lineageId, stepKey])
+  @@index([workspaceId, lineageId, ordinal])
+  @@map("lineage_steps")
+}
+
+model AiCandidate {
+  id                       String   @id @default(cuid())
+  workspaceId              String
+  projectId                String?
+  candidateType            String
+  title                    String
+  statement                String   @db.Text
+  supportingEvidenceIds    Json
+  contradictingEvidenceIds Json
+  confidence               Float
+  alternativeExplanation   String   @db.Text
+  evidenceGrade            String
+  provider                 String
+  model                    String
+  promptTemplateVersion    String
+  reviewStatus             String   @default("pending")
+  createdAt                DateTime @default(now())
+  reviewedAt               DateTime?
+  reviewedBy               String?
+
+  @@index([workspaceId, reviewStatus, candidateType])
+  @@map("ai_candidates")
+}
+
+model ReviewTask {
+  id          String   @id @default(cuid())
+  workspaceId String
+  targetType  String
+  targetId    String
+  status      String   @default("open")
+  priority    Int      @default(50)
+  assignedTo  String?
+  decision    String?
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+  resolvedAt  DateTime?
+
+  @@index([workspaceId, status, priority])
+  @@map("review_tasks")
+}
+
+model CompilerSession {
+  id          String   @id @default(cuid())
+  workspaceId String
+  projectId   String?
+  problem     String   @db.Text
+  moduleIds   Json
+  status      String   @default("draft")
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([workspaceId, createdAt])
+  @@map("compiler_sessions")
+}
+
+model CompiledPrompt {
+  id                String   @id @default(cuid())
+  workspaceId       String
+  compilerSessionId String
+  version           Int
+  title             String
+  markdown          String   @db.Text
+  provenance        Json
+  contentHash       String
+  createdAt         DateTime @default(now())
+
+  @@unique([compilerSessionId, version])
+  @@map("compiled_prompts")
+}
+
+model SearchDocument {
+  id            String                @id @default(cuid())
+  workspaceId   String
+  entityType    String
+  entityId      String
+  title         String
+  body          String                @db.Text
+  facets        Json?
+  evidenceGrade String
+  embedding     Unsupported("vector")?
+  updatedAt     DateTime              @updatedAt
+
+  @@unique([workspaceId, entityType, entityId])
+  @@index([workspaceId, entityType, evidenceGrade])
+  @@map("search_documents")
+}
+
+model AuditEvent {
+  id            String   @id @default(cuid())
+  workspaceId   String
+  actorId       String
+  action        String
+  targetType    String
+  targetId      String
+  correlationId String
+  payload       Json?
+  createdAt     DateTime @default(now())
+
+  @@index([workspaceId, createdAt])
+  @@index([workspaceId, targetType, targetId])
+  @@map("audit_events")
+}

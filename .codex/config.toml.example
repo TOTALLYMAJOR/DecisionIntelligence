@@ -1,0 +1,5 @@
+# Copy only the settings you intentionally use into your local Codex config.
+# Repository behavior is governed by AGENTS.md; secrets do not belong here.
+# Model selection is intentionally left to the user's current Codex installation.
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
