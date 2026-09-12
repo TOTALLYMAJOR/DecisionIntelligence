@@ -54,6 +54,7 @@ export function DecisionStudio() {
   const [selectedOption, setSelectedOption] =
     useState<DecisionOption['optionId']>('extend-authority');
   const [loading, setLoading] = useState(false);
+  const [includeRepositoryEvidence, setIncludeRepositoryEvidence] = useState(true);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
 
@@ -82,7 +83,7 @@ export function DecisionStudio() {
       const response = await fetch('/api/decisions/analyze', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(brief),
+        body: JSON.stringify({ ...brief, includeRepositoryEvidence }),
       });
       if (!response.ok) throw new Error('Decision analysis returned ' + response.status + '.');
       const result = (await response.json()) as DecisionAnalysis;
@@ -162,7 +163,18 @@ export function DecisionStudio() {
               <Scale size={15} />
               {loading ? 'Mapping consequences…' : 'Map consequences'}
             </button>
-            <span>This does not inspect a repository or authorize implementation.</span>
+            <label className="repositoryToggle">
+              <input
+                type="checkbox"
+                checked={includeRepositoryEvidence}
+                onChange={(event) => {
+                  setIncludeRepositoryEvidence(event.target.checked);
+                  setAnalysis(null);
+                }}
+              />
+              Ground in this repository
+            </label>
+            <span>Static files only; no code execution or implementation authorization.</span>
           </div>
           {error ? (
             <p className="decisionError" role="alert">
@@ -181,8 +193,11 @@ export function DecisionStudio() {
           </div>
           <div>
             <strong>02</strong>
-            <span>Prior evidence</span>
-            <p>Relevant prompts, failures, principles, and lineages with source grades intact.</p>
+            <span>Grounded evidence</span>
+            <p>
+              Bounded static source plus relevant precedents, with source and relevance grades
+              separated.
+            </p>
           </div>
           <div>
             <strong>03</strong>
@@ -211,10 +226,67 @@ export function DecisionStudio() {
               <strong>{analysis.openQuestions.length}</strong>
             </div>
             <div>
-              <span>Retrieved records</span>
-              <strong>{analysis.evidence.length}</strong>
+              <span>Repository files</span>
+              <strong>{analysis.repositorySnapshot?.inspectedFileCount ?? 'not scanned'}</strong>
             </div>
           </section>
+
+          {analysis.repositorySnapshot ? (
+            <section className="panel repositoryEvidencePanel">
+              <div className="panelHeader">
+                <div>
+                  <h2>Repository evidence snapshot</h2>
+                  <p>Observed static source, attached without turning relevance into proof.</p>
+                </div>
+                <EvidenceBadge grade="VERIFIED" />
+              </div>
+              <div className="repositorySnapshotGrid">
+                <aside className="repositorySnapshotMeta">
+                  <span className="entityMeta">{analysis.repositorySnapshot.repositoryName}</span>
+                  <strong>{analysis.repositorySnapshot.inspectedFileCount} files inspected</strong>
+                  <div className="repositoryManifest">
+                    <span>Manifest</span>
+                    <code>{analysis.repositorySnapshot.manifestHash.slice(0, 16)}</code>
+                  </div>
+                  <p>{analysis.repositorySnapshot.authorityBoundary}</p>
+                  {analysis.repositorySnapshot.warnings.map((warning) => (
+                    <small key={warning}>{warning}</small>
+                  ))}
+                </aside>
+                <div className="repositoryFileList">
+                  {analysis.repositorySnapshot.evidence.length > 0 ? (
+                    analysis.repositorySnapshot.evidence.map((file) => (
+                      <article className="repositoryFile" key={file.id}>
+                        <div>
+                          <span className="repositoryFilePath mono">{file.relativePath}</span>
+                          <span className="repositoryFileSignals">
+                            {file.kind} · {file.lineCount} lines · relevance inferred
+                          </span>
+                        </div>
+                        <div className="tagRow">
+                          {file.domains.slice(0, 3).map((domain) => (
+                            <span className="tag" key={domain}>
+                              {domain}
+                            </span>
+                          ))}
+                        </div>
+                      </article>
+                    ))
+                  ) : (
+                    <div className="emptyState">
+                      <strong>No matching static files</strong>
+                      The snapshot completed, but the brief did not match eligible source.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+          ) : includeRepositoryEvidence ? (
+            <div className="callout repositoryUnavailable" role="status">
+              Repository inspection was unavailable. The analysis below is grounded only in the
+              submitted brief and fixture precedents.
+            </div>
+          ) : null}
 
           <div className="decisionAnalysisGrid">
             <section className="panel">
@@ -244,6 +316,12 @@ export function DecisionStudio() {
                       </div>
                       <p>{impact.rationale}</p>
                       <small>{impact.question}</small>
+                      {impact.repositoryEvidenceIds.length > 0 ? (
+                        <span className="repositoryEvidenceCount">
+                          {impact.repositoryEvidenceIds.length} matching static file
+                          {impact.repositoryEvidenceIds.length === 1 ? '' : 's'}
+                        </span>
+                      ) : null}
                     </div>
                     <EvidenceBadge grade={impact.evidenceGrade} />
                   </article>

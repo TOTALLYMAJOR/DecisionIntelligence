@@ -1,5 +1,30 @@
 # Starter Validation Report
 
+## Current local verification — 2026-09-12
+
+The repository-grounded Decision Studio slice was verified from the Linux-native WSL checkout with
+Node.js 22.22.2. `npm run verify` completed successfully and covered:
+
+- the repository structure, secret scan, architecture boundaries, and static Docker contract;
+- workspace TypeScript checks;
+- 5 Vitest files and 15 passing tests, including repository-root discovery, scan exclusions,
+  evidence grades, request validation, and decision-analysis behavior;
+- ESLint, with the existing non-blocking Next.js App Router warning about the pages-directory rule;
+- Prisma client generation; and
+- the Next.js production build, including `/decisions` and `/api/decisions/analyze`.
+
+Native browser verification covered desktop and mobile layouts, a successful repository-grounded
+analysis, the explicit repository-evidence opt-out, and the absence of visible error overlays or
+horizontal overflow. The observed snapshot recorded 143 eligible files at that time, was not
+capped, and returned 12 ranked evidence records.
+
+This proves focused local behavior in that working tree. It does not prove a Docker runtime scan,
+hosted deployment, live provider acceptance, persistence, canonical promotion, human acceptance,
+or business outcomes. `npm run verify` checks the Docker contract statically; it does not execute
+`npm run docker:verify`.
+
+## Original artifact verification
+
 ## Docker conversion result
 
 The starter now has one canonical root Docker runtime.
@@ -26,7 +51,7 @@ AI_WRITEBACK_ENABLED=false
 
 This initializes the durable backend services while keeping the current UI honest about its fixture-backed walking-skeleton data source.
 
-## Executed successfully in the artifact environment
+### Executed successfully in the artifact environment
 
 - `node scripts/verify-structure.mjs`
 - `node scripts/check-secrets.mjs`
@@ -40,7 +65,7 @@ This initializes the durable backend services while keeping the current UI hones
 - Static verification of the eight required Compose services
 - Static verification of Docker build stages, workspace manifest copies, health boundaries, backend network isolation, AI writeback default, and build-context secret exclusions
 
-## Not executed in the artifact environment
+### Not executed in the artifact environment
 
 The current artifact environment does not contain a Docker, Podman, Buildah, or compatible container runtime. Network access to the npm registry is also unavailable (`EAI_AGAIN`). Therefore the following could not be honestly executed here:
 
@@ -60,6 +85,6 @@ The current artifact environment does not contain a Docker, Podman, Buildah, or 
 
 `DOCKER_AGENT_PROMPT.md` and `npm run docker:verify` make these checks mandatory on the first Docker-capable VS Code/WSL run.
 
-## Authority statement
+### Authority statement
 
 The successful checks prove the repository’s Docker contract, Compose topology, source syntax, security exclusions, and dependency-free structural behavior. They do not prove container runtime compatibility, installed dependency compatibility, database connectivity, AI-provider acceptance, real corpus ingestion, hosted deployment, human acceptance, or business outcome.

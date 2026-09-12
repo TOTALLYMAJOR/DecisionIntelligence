@@ -78,7 +78,8 @@ storage, and automatic GitHub evidence correlation are later bounded slices.
 
 The walking-skeleton Decision Studio is deterministic and fixture-backed. It prioritizes domains
 to investigate, retrieves potentially relevant precedent without changing source grades, compares
-three architecture postures, and generates a draft contract. Its scores are not probabilities, its
-retrieval is not proof of relevance, and its output cannot authorize execution or establish
-canonical truth. Repository inspection, runtime evidence, provider acceptance, human approval, and
-outcome evidence must be gathered and recorded as distinct claims.
+three architecture postures, and generates a draft contract. In local mode it can also inspect a
+bounded set of repository-relative static files. File presence and hashes are observed evidence;
+their relevance remains inferred. Scores are not probabilities, and no output can authorize
+execution or establish canonical truth. Git history, runtime evidence, provider acceptance, human
+approval, and outcome evidence must be gathered and recorded as distinct claims.

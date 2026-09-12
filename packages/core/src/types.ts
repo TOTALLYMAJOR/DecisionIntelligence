@@ -176,7 +176,32 @@ export interface DecisionImpact {
   rationale: string;
   question: string;
   matchedTerms: string[];
+  repositoryEvidenceIds: string[];
   evidenceGrade: 'INFERRED' | 'TENTATIVE';
+}
+
+export interface RepositoryFileEvidence {
+  id: string;
+  relativePath: string;
+  contentHash: string;
+  byteSize: number;
+  lineCount: number;
+  kind: 'implementation' | 'test' | 'schema' | 'configuration' | 'governance' | 'documentation';
+  domains: DecisionImpactDomain[];
+  matchedTerms: string[];
+  sourceGrade: 'VERIFIED';
+  relevanceGrade: 'INFERRED';
+}
+
+export interface RepositorySnapshot {
+  repositoryName: string;
+  manifestHash: string;
+  observedAt: string;
+  inspectedFileCount: number;
+  capped: boolean;
+  evidence: RepositoryFileEvidence[];
+  warnings: string[];
+  authorityBoundary: string;
 }
 
 export interface DecisionEvidence {
@@ -216,6 +241,7 @@ export interface DecisionAnalysis {
   openQuestions: string[];
   options: DecisionOption[];
   recommendedOptionId: DecisionOption['optionId'];
+  repositorySnapshot: RepositorySnapshot | null;
 }
 
 export interface DecisionContract {
@@ -226,5 +252,6 @@ export interface DecisionContract {
     analysisId: string;
     evidenceIds: string[];
     impactDomains: DecisionImpactDomain[];
+    repositoryManifestHash: string | null;
   };
 }

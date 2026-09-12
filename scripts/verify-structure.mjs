@@ -13,6 +13,7 @@ const required = [
   'packages/core/src/fixtures.ts',
   'packages/core/src/decision.ts',
   'packages/core/src/compiler.ts',
+  'packages/ingestion/src/repository-scanner.ts',
   'packages/ai/src/router.ts',
   'packages/db/prisma/schema.prisma',
   'packages/ingestion/src/archive-parser.ts',

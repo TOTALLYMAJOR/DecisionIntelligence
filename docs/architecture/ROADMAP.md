@@ -4,7 +4,7 @@
 
 - Fixture-mode product experience
 - Search
-- Deterministic Decision Studio with impact map, precedent retrieval, architecture postures, and draft contract
+- Deterministic Decision Studio with bounded static repository evidence, impact map, precedent retrieval, architecture postures, and draft contract
 - Prompt DNA
 - Lineage visualization
 - Compiler

@@ -25,6 +25,19 @@ AI_PROVIDER_MODE=mock
 
 The UI therefore remains honest about its walking-skeleton data source while the durable database, queue, and object-storage paths are initialized and verified.
 
+## Repository-grounding availability
+
+The current standalone `web` image contains the built Next.js runtime, static assets, and public
+assets. It does not contain or mount the full source checkout, and Compose does not set
+`REPOSITORY_SCAN_ROOT`. Decision Studio therefore normally degrades to analysis without a
+repository snapshot in the default Docker stack.
+
+This is an intentional evidence boundary, not a container health failure. Enabling repository
+access in a container requires a separate operator decision about a server-visible, read-only
+source mount, root configuration, authorization, and isolation. That capability is not claimed by
+the current Compose contract. Native Node execution from the governed checkout is the supported
+way to exercise the repository-grounding slice today.
+
 ## Prerequisites
 
 - Docker Desktop with WSL integration, or Docker Engine on Linux
@@ -70,6 +83,8 @@ The verification script checks:
 - Worker readiness
 - Host-accessible health endpoint
 
+It does not assert that the web container can inspect the host repository checkout.
+
 ## Optional overrides
 
 ```bash
@@ -105,6 +120,7 @@ Never use the destructive reset when the local evidence vault contains material 
 
 A healthy Docker stack proves that the local processes and dependencies are available. It does not prove:
 
+- Repository-snapshot availability inside the standalone web image
 - OpenAI or Anthropic provider acceptance
 - Real prompt-corpus ingestion
 - Canonical knowledge promotion

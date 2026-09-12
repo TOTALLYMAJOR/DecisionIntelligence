@@ -7,6 +7,7 @@ import type {
   DecisionImpactDomain,
   DecisionImpactLevel,
   DecisionOption,
+  RepositorySnapshot,
 } from './types';
 
 type DomainDefinition = {
@@ -190,6 +191,7 @@ const scoreDomain = (definition: DomainDefinition, source: string): DecisionImpa
     score,
     level,
     matchedTerms,
+    repositoryEvidenceIds: [],
     evidenceGrade: matchedTerms.length >= 2 ? 'INFERRED' : 'TENTATIVE',
     rationale:
       matchedTerms.length > 0
@@ -339,7 +341,10 @@ const retrieveEvidence = (impacts: DecisionImpact[]) => {
     }));
 };
 
-export const analyzeProposedChange = (brief: DecisionBrief): DecisionAnalysis => {
+export const analyzeProposedChange = (
+  brief: DecisionBrief,
+  repositorySnapshot: RepositorySnapshot | null = null,
+): DecisionAnalysis => {
   const normalizedBrief: DecisionBrief = {
     change: brief.change.trim(),
     desiredOutcome: brief.desiredOutcome.trim(),
@@ -350,6 +355,13 @@ export const analyzeProposedChange = (brief: DecisionBrief): DecisionAnalysis =>
   );
   const impacts = domainDefinitions
     .map((definition) => scoreDomain(definition, source))
+    .map((impact) => ({
+      ...impact,
+      repositoryEvidenceIds:
+        repositorySnapshot?.evidence
+          .filter((evidence) => evidence.domains.includes(impact.domain))
+          .map((evidence) => evidence.id) ?? [],
+    }))
     .sort((left, right) => right.score - left.score || left.title.localeCompare(right.title));
   const recommendedOptionId = recommendedOption(source);
 
@@ -364,12 +376,15 @@ export const analyzeProposedChange = (brief: DecisionBrief): DecisionAnalysis =>
     evidence: retrieveEvidence(impacts),
     assumptions: [
       'The submitted brief is complete enough to prioritize investigation.',
-      'No repository, runtime, provider, customer, or production evidence was inspected.',
+      repositorySnapshot
+        ? 'The repository snapshot observes bounded static files only; Git history, execution, runtime, provider, customer, and production evidence remain uninspected.'
+        : 'No repository, runtime, provider, customer, or production evidence was inspected.',
       'Retrieved records retain their original source grade; their relevance to this change remains inferred.',
     ],
     openQuestions: impacts.slice(0, 5).map((impact) => impact.question),
     options: architectureOptions(recommendedOptionId),
     recommendedOptionId,
+    repositorySnapshot,
   };
 };
 
@@ -410,6 +425,19 @@ export const compileDecisionContract = (
       ', matched on "' +
       item.matchedOn +
       '")',
+  );
+  const repositoryLines = analysis.repositorySnapshot?.evidence.map(
+    (item) =>
+      '- ' +
+      item.relativePath +
+      ' · ' +
+      item.kind.toUpperCase() +
+      ' · ' +
+      item.sourceGrade +
+      ' source / ' +
+      item.relevanceGrade +
+      ' relevance · matched ' +
+      (item.matchedTerms.join(', ') || 'structural signals'),
   );
 
   const markdown = [
@@ -454,6 +482,19 @@ export const compileDecisionContract = (
     '',
     bullets(option.requiredEvidence),
     '',
+    '## Repository snapshot',
+    '',
+    analysis.repositorySnapshot
+      ? '- **Manifest:** ' +
+        analysis.repositorySnapshot.manifestHash +
+        '\n- **Observed:** ' +
+        analysis.repositorySnapshot.observedAt +
+        '\n- **Boundary:** ' +
+        analysis.repositorySnapshot.authorityBoundary +
+        '\n' +
+        (repositoryLines?.join('\n') || '- No relevant static files were matched.')
+      : '- No repository snapshot was attached. Repository impact remains uninspected.',
+    '',
     '## Retrieved precedent',
     '',
     precedentLines.join('\n') ||
@@ -480,6 +521,7 @@ export const compileDecisionContract = (
       analysisId: analysis.analysisId,
       evidenceIds: analysis.evidence.map((item) => item.id),
       impactDomains: requiredImpacts.map((impact) => impact.domain),
+      repositoryManifestHash: analysis.repositorySnapshot?.manifestHash ?? null,
     },
   };
 };

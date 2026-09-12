@@ -28,8 +28,11 @@ patterns, lineages, creator-profile claims, and agent-ready execution prompts.
 This is a runnable **walking skeleton**, not a claim that the complete 7,000+ prompt corpus,
 production authentication, hosted storage, or every canonical promotion workflow is finished.
 Fixture mode demonstrates the product and preserves the authority model. Prisma mode supplies
-its durable backend foundation. Decision Studio output is an investigation projection: it does
-not inspect a repository, prove an impact, authorize implementation, or promote canonical knowledge.
+its durable backend foundation. In local mode, Decision Studio can attach a bounded, read-only
+snapshot of repository-relative static files. That snapshot does not inspect Git history, execute
+code, prove runtime impact, authorize implementation, or promote canonical knowledge.
+See [`docs/architecture/REPOSITORY_EVIDENCE.md`](docs/architecture/REPOSITORY_EVIDENCE.md)
+for its scan limits, exclusions, evidence grades, and runtime availability.
 
 ## Fastest start — complete Docker stack
 
@@ -44,6 +47,10 @@ docker compose up --build
 Open `http://127.0.0.1:3000`.
 
 The root stack starts the web app, BullMQ worker, PostgreSQL with pgvector and pg_trgm, Redis, MinIO, the private evidence bucket, Prisma schema bootstrap, and the 20-prompt seed. It requires no OpenAI or Anthropic keys because `AI_PROVIDER_MODE=mock` is the safe default.
+
+The standalone web image does not contain or mount the full source checkout. Decision Studio
+therefore degrades safely to brief and fixture evidence in the default Docker runtime; Docker
+health alone does not prove repository-snapshot availability.
 
 Verify the complete stack with:
 
@@ -62,6 +69,9 @@ npm run dev
 ```
 
 `DATA_MODE=fixture` and `AI_PROVIDER_MODE=mock` are the defaults, so the demo UI, search, compiler, lineage graph, and analysis route work without external services.
+When the server runs from the governed checkout, Decision Studio can discover that checkout and
+attach its bounded static snapshot. An operator may instead set `REPOSITORY_SCAN_ROOT` to a
+server-visible directory; the browser never supplies a filesystem path.
 
 ## Infrastructure-only development
 
@@ -134,10 +144,11 @@ npm run docker:down         # preserve data volumes
 ## Authority model
 
 1. **Historical evidence is immutable.**
-2. **Canonical knowledge is versioned and human-reviewed.**
-3. **AI outputs are candidates only.**
-4. **Search indexes, embeddings, rankings, summaries, and graph layouts are disposable projections.**
-5. **Implementation, deployment, provider proof, human acceptance, and business outcomes remain distinct.**
+2. **A repository snapshot is a bounded, ephemeral observation—not historical or canonical evidence.**
+3. **Canonical knowledge is versioned and human-reviewed.**
+4. **AI outputs are candidates only.**
+5. **Search indexes, embeddings, rankings, summaries, and graph layouts are disposable projections.**
+6. **Implementation, deployment, provider proof, human acceptance, and business outcomes remain distinct.**
 
 See `docs/architecture/AUTHORITY_MODEL.md`.
 

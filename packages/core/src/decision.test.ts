@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { analyzeProposedChange, compileDecisionContract } from './decision';
+import type { RepositorySnapshot } from './types';
 
 const analysis = analyzeProposedChange({
   change:
@@ -37,5 +38,42 @@ describe('decision intelligence', () => {
     expect(contract.markdown).toContain('Preserve one canonical authority');
     expect(contract.markdown).toContain('Stop conditions');
     expect(contract.provenance.evidenceIds).toEqual(analysis.evidence.map((item) => item.id));
+    expect(contract.provenance.repositoryManifestHash).toBeNull();
+  });
+
+  it('attaches repository evidence without promoting inferred relevance', () => {
+    const repositorySnapshot: RepositorySnapshot = {
+      repositoryName: 'decision-intelligence',
+      manifestHash: 'abc123',
+      observedAt: '2026-09-12T00:00:00.000Z',
+      inspectedFileCount: 12,
+      capped: false,
+      evidence: [
+        {
+          id: 'REPO-123',
+          relativePath: 'apps/web/app/api/refunds/route.ts',
+          contentHash: 'def456',
+          byteSize: 120,
+          lineCount: 4,
+          kind: 'implementation',
+          domains: ['authority', 'commercial'],
+          matchedTerms: ['refund', 'tenant'],
+          sourceGrade: 'VERIFIED',
+          relevanceGrade: 'INFERRED',
+        },
+      ],
+      warnings: [],
+      authorityBoundary: 'Static source only.',
+    };
+    const repositoryAnalysis = analyzeProposedChange(analysis.brief, repositorySnapshot);
+    const contract = compileDecisionContract(repositoryAnalysis, 'bounded-orchestration');
+
+    expect(repositoryAnalysis.repositorySnapshot?.manifestHash).toBe('abc123');
+    expect(
+      repositoryAnalysis.impacts.find((impact) => impact.domain === 'authority')
+        ?.repositoryEvidenceIds,
+    ).toEqual(['REPO-123']);
+    expect(contract.markdown).toContain('VERIFIED source / INFERRED relevance');
+    expect(contract.provenance.repositoryManifestHash).toBe('abc123');
   });
 });
