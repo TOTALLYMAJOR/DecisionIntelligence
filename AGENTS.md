@@ -99,3 +99,9 @@ Do not claim a command passed unless it was executed successfully.
 
 Commit only when explicitly requested. Never push, merge, deploy, rotate secrets, or change
 provider configuration without direct authorization.
+
+## Prepared integration continuation
+
+For an explicit operator `begin` concerning the prepared Proofloom / AgentFlow / Traffic-Control-Pilot integration, read `docs/BEGIN-INTEGRATION.md`. This repository is advisory and is not a prerequisite for the first ordinary successful local run. Do not automatically restart the starter implementation prompts, rebuild the UI, change providers or invent a second execution system.
+
+Preserve the above authority rules. A real structural-reconsideration request may produce a bounded, separately authorized advisory task; its output remains a draft and cannot approve a replacement handoff. Preparation starts no implementation, and the word `begin` does not fabricate human approval, signatures, test evidence or access. Do not ask the operator to restate the selected program; identify genuine scope, authority or execution-access blockers explicitly.
