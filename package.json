@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
-    "concurrently": "^9.2.1",
+    "concurrently": "^9.2.5",
     "eslint": "^9.39.0",
     "eslint-config-next": "^16.2.11",
     "prettier": "^3.6.2",
